@@ -5,9 +5,11 @@
     <string name="switch_on_gps_dialog_title">Your GPS seems to be disabled, do you want to enable it?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
-    <string name="add_your_marker">Please long press on map to add the center marker.</string>
-    <string name="add_your_circle">Please press on marker to add the area radius.</string>
-    <string name="set_radius_of_area">Set radius of area</string>
-    <string name="insert_radius_here">Insert radius here</string>
+    <string name="add_your_marker">Please long press on the map anywhere\n for adding the center of the circle.</string>
+    <string name="add_your_circle">Please click on the red marker\n for adding the area radius.</string>
+    <string name="add_your_circle_again">Please click on the red marker again\n for changing the area radius.</string>
+    <string name="set_radius_of_area">Submit the radius</string>
+    <string name="insert_radius_here">Insert the radius here</string>
     <string name="radius_empty">Radius might not be empty</string>
+    <string name="please_insert_radius_in_meters_below">Please enter radius in meters in the box below</string>
 </resources>

@@ -35,7 +35,7 @@ public class MapsActivityPresenter extends MvpPresenter<MapsActivityView> implem
     public void getLastKnownLocation() {
         if (netProviderEnabled()) {
             getViewState().setLastKnownLocation(locationManager.getLastKnownLocation(netProvider));
-        } else if(!netProviderEnabled() && gpsProviderEnabled()){
+        } else if (!netProviderEnabled() && gpsProviderEnabled()) {
             getViewState().setLastKnownLocation(locationManager.getLastKnownLocation(gpsProvider));
         } else {
             getViewState().showDialogSwitchOnGps();
@@ -44,25 +44,25 @@ public class MapsActivityPresenter extends MvpPresenter<MapsActivityView> implem
     }
 
     @SuppressLint ("MissingPermission")
-    public void startListenLocationUpdates(){
+    public void startListenLocationUpdates() {
         if (netProviderEnabled()) {
             locationManager.requestLocationUpdates(netProvider, THIRTY_SECONDS, 0, this);
-        } else if(!netProviderEnabled() && gpsProviderEnabled()){
+        } else if (!netProviderEnabled() && gpsProviderEnabled()) {
             locationManager.requestLocationUpdates(gpsProvider, THIRTY_SECONDS, 0, this);
         } else {
             getViewState().showDialogSwitchOnGps();
         }
     }
 
-    public void stopListenLocationUpdates(){
+    public void stopListenLocationUpdates() {
         locationManager.removeUpdates(this);
     }
 
-    private boolean netProviderEnabled(){
+    private boolean netProviderEnabled() {
         return locationManager.isProviderEnabled(netProvider);
     }
 
-    private boolean gpsProviderEnabled(){
+    private boolean gpsProviderEnabled() {
         return locationManager.isProviderEnabled(gpsProvider);
     }
 
@@ -102,11 +102,21 @@ public class MapsActivityPresenter extends MvpPresenter<MapsActivityView> implem
         return provider1.equals(provider2);
     }
 
-    public LatLng getLatLngFromMarker(Marker marker){
-        return new LatLng(marker.getPosition().latitude, marker.getPosition().longitude);
+    public LatLng getLatLngFromMarker(Marker marker) {
+        if (marker != null) {
+            return new LatLng(marker.getPosition().latitude, marker.getPosition().longitude);
+        } else {return new LatLng(0.0, 0.0);}
     }
 
-    /** LocationListener methods **/
+    public LatLng getLatLngFromLocation(Location location) {
+        if (location != null) {
+            return new LatLng(location.getLatitude(), location.getLongitude());
+        } else {return new LatLng(0.0, 0.0);}
+    }
+
+    /**
+     * LocationListener methods
+     **/
 
     @Override
     public void onLocationChanged(Location location) {

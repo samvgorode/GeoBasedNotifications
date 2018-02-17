@@ -1,24 +1,18 @@
 package com.example.who.geobasednotifications.ui;
 
-import android.Manifest;
 import android.graphics.Color;
 import android.location.Location;
-import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.widget.FrameLayout;
 
-import com.arellomobile.mvp.MvpAppCompatActivity;
 import com.arellomobile.mvp.presenter.InjectPresenter;
-import com.arellomobile.mvp.presenter.PresenterType;
 import com.example.who.geobasednotifications.R;
 import com.example.who.geobasednotifications.interfaces.MapsActivityView;
 import com.example.who.geobasednotifications.presenters.MapsActivityPresenter;
 import com.example.who.geobasednotifications.ui.fragments.ChooseRadiusDialog;
-import com.example.who.geobasednotifications.utils.DialogUtils;
-import com.google.android.gms.maps.CameraUpdate;
-import com.google.android.gms.maps.CameraUpdateFactory;
+import com.example.who.geobasednotifications.utils.DialogHelper;
+import com.example.who.geobasednotifications.utils.MapUiHelper;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -26,25 +20,22 @@ import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import pub.devrel.easypermissions.AfterPermissionGranted;
-import pub.devrel.easypermissions.AppSettingsDialog;
-import pub.devrel.easypermissions.EasyPermissions;
 
 public class MapsActivity extends BaseActivity implements OnMapReadyCallback, MapsActivityView, GoogleMap.OnMarkerClickListener {
 
     @BindView (R.id.root_layout)
-    FrameLayout rootLayout;
+    FrameLayout root;
 
     private GoogleMap mMap;
     private Location lastKnownLocation;
     private Snackbar snackbar;
+    private Circle circle;
     private Marker centerMarker;
+    private Marker userMarker;
 
     @InjectPresenter
     MapsActivityPresenter presenter;
@@ -76,17 +67,14 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback, Ma
         mMap.getUiSettings().setMapToolbarEnabled(false);
         mMap.setOnMarkerClickListener(this);
         checkForLocationCoords();
-        snackbar = Snackbar.make(rootLayout, getString(R.string.add_your_marker), Snackbar.LENGTH_INDEFINITE);
-        snackbar.show();
+        snackbar = DialogHelper.getSnack(getString(R.string.add_your_marker), snackbar, root);
         addOnMapLongPress();
     }
 
     private void addOnMapLongPress() {
         mMap.setOnMapLongClickListener(latLng -> {
-            mMap.clear();
-            centerMarker = mMap.addMarker(new MarkerOptions()
-                    .position(latLng));
-            snackbar.setText(getString(R.string.add_your_circle));
+            centerMarker = MapUiHelper.getCenterMarker(mMap, centerMarker, latLng);
+            snackbar = DialogHelper.getSnack(getString(R.string.add_your_circle), snackbar, root);
         });
     }
 
@@ -94,17 +82,18 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback, Ma
     public boolean onMarkerClick(Marker marker) {
         if (marker.equals(centerMarker)) {
             ChooseRadiusDialog dialog = ChooseRadiusDialog.newInstance(this::drawCircle);
-            if(!dialog.isAdded()) {
-                dialog.show(getSupportFragmentManager(), "");}
-            snackbar.dismiss();
+            if (!dialog.isAdded()) {
+                dialog.show(getSupportFragmentManager(), "");
+            }
+            snackbar = DialogHelper.getSnack(getString(R.string.add_your_circle_again), snackbar, root);
             return true;
-        }
-        else return false;
+        } else return false;
     }
 
-    private void drawCircle(String string){
+    private void drawCircle(String string) {
         double radius = Double.valueOf(string);
-        mMap.addCircle(new CircleOptions()
+        if (circle != null) {circle.remove();}
+        circle = mMap.addCircle(new CircleOptions()
                 .center(presenter.getLatLngFromMarker(centerMarker))
                 .radius(radius)
                 .strokeColor(Color.RED)
@@ -134,18 +123,26 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback, Ma
 
     @Override
     public void showDialogSwitchOnGps() {
-        DialogUtils.buildAlertMessageNoGps(this);
+        DialogHelper.buildAlertMessageNoGps(this);
     }
 
     @Override
-    public void setLastKnownLocation(Location lastKnownLocation) {
-        this.lastKnownLocation = lastKnownLocation;
+    public void setLastKnownLocation(Location lastLoc) {
+        this.lastKnownLocation = lastLoc;
+        if (mMap != null) {
+            LatLng latLng = presenter.getLatLngFromLocation(lastLoc);
+            userMarker = MapUiHelper.getUserMarker(mMap, userMarker, latLng);
+            MapUiHelper.animatePosition(mMap, latLng);
+        }
     }
 
     @Override
     public void locationChanged(Location currentBestLocation) {
         if (presenter.isBetterLocation(lastKnownLocation, currentBestLocation)) {
             lastKnownLocation = currentBestLocation;
+            LatLng latLng = presenter.getLatLngFromLocation(currentBestLocation);
+            userMarker = MapUiHelper.getUserMarker(mMap, userMarker, latLng);
+            MapUiHelper.animatePosition(mMap, latLng);
         }
     }
 }
