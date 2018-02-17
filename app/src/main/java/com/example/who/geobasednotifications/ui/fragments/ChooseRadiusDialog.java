@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -45,6 +46,13 @@ public class ChooseRadiusDialog extends DialogFragment {
         View v = inflater.inflate(R.layout.popup_choose_radius, container, false);
         ButterKnife.bind(this, v);
         return v;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if(getDialog().getWindow()!=null)
+        getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
     }
 
     @OnClick(R.id.tv_radius_submit)
