@@ -12,4 +12,5 @@
     <string name="insert_radius_here">Insert the radius here</string>
     <string name="radius_empty">Radius might not be empty</string>
     <string name="please_insert_radius_in_meters_below">Please enter radius in meters in the box below</string>
+    <string name="you_are_already_here">You are already here</string>
 </resources>

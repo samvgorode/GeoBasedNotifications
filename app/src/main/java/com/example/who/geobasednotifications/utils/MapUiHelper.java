@@ -1,11 +1,14 @@
 package com.example.who.geobasednotifications.utils;
 
+import android.graphics.Color;
 import android.location.Location;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -41,5 +44,14 @@ public class MapUiHelper {
                 .tilt(30)
                 .build();
         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+    }
+
+    public static Circle getCircle(GoogleMap mMap, Circle circle, LatLng latLng, double radius){
+        if (circle != null) {circle.remove();}
+        return mMap.addCircle(new CircleOptions()
+                .center(latLng)
+                .radius(radius)
+                .strokeColor(Color.RED)
+                .fillColor(Color.GRAY));
     }
 }

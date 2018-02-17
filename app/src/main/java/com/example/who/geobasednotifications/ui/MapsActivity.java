@@ -1,10 +1,10 @@
 package com.example.who.geobasednotifications.ui;
 
-import android.graphics.Color;
 import android.location.Location;
 import android.support.design.widget.Snackbar;
 import android.os.Bundle;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import com.arellomobile.mvp.presenter.InjectPresenter;
 import com.example.who.geobasednotifications.R;
@@ -17,7 +17,6 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.Circle;
-import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 
@@ -73,8 +72,12 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback, Ma
 
     private void addOnMapLongPress() {
         mMap.setOnMapLongClickListener(latLng -> {
+            if(latLng.equals(userMarker.getPosition())){
+                Toast.makeText(this, R.string.you_are_already_here, Toast.LENGTH_LONG).show();
+            } else {
             centerMarker = MapUiHelper.getCenterMarker(mMap, centerMarker, latLng);
             snackbar = DialogHelper.getSnack(getString(R.string.add_your_circle), snackbar, root);
+            }
         });
     }
 
@@ -92,12 +95,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback, Ma
 
     private void drawCircle(String string) {
         double radius = Double.valueOf(string);
-        if (circle != null) {circle.remove();}
-        circle = mMap.addCircle(new CircleOptions()
-                .center(presenter.getLatLngFromMarker(centerMarker))
-                .radius(radius)
-                .strokeColor(Color.RED)
-                .fillColor(Color.GRAY));
+        LatLng latLng = presenter.getLatLngFromMarker(centerMarker);
+        circle = MapUiHelper.getCircle(mMap, circle, latLng, radius);
     }
 
     @AfterPermissionGranted (RC_LOCATION_PERM)
