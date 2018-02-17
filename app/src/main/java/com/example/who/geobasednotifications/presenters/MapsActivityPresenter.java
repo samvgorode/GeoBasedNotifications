@@ -6,11 +6,13 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.arellomobile.mvp.InjectViewState;
 import com.arellomobile.mvp.MvpPresenter;
 import com.example.who.geobasednotifications.App;
 import com.example.who.geobasednotifications.interfaces.MapsActivityView;
+import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 
@@ -21,7 +23,7 @@ public class MapsActivityPresenter extends MvpPresenter<MapsActivityView> implem
     private String gpsProvider;
     private String netProvider;
     // check for location updates every thirty seconds
-    private static final int THIRTY_SECONDS = 1000 * 30;
+    private static final int THIRTY_SECONDS = 1000 /** 30*/;
     private static final int TWO_MINUTES = 1000 * 60 * 2;
 
     public MapsActivityPresenter() {
@@ -66,42 +68,6 @@ public class MapsActivityPresenter extends MvpPresenter<MapsActivityView> implem
         return locationManager.isProviderEnabled(gpsProvider);
     }
 
-    public boolean isBetterLocation(Location location, Location currentBestLocation) {
-        if (currentBestLocation == null) {
-            return true;
-        }
-        long timeDelta = location.getTime() - currentBestLocation.getTime();
-        boolean isSignificantlyNewer = timeDelta > TWO_MINUTES;
-        boolean isSignificantlyOlder = timeDelta < -TWO_MINUTES;
-        boolean isNewer = timeDelta > 0;
-        if (isSignificantlyNewer) {
-            return true;
-        } else if (isSignificantlyOlder) {
-            return false;
-        }
-        int accuracyDelta = (int) (location.getAccuracy() - currentBestLocation.getAccuracy());
-        boolean isLessAccurate = accuracyDelta > 0;
-        boolean isMoreAccurate = accuracyDelta < 0;
-        boolean isSignificantlyLessAccurate = accuracyDelta > 200;
-        boolean isFromSameProvider = isSameProvider(location.getProvider(),
-                currentBestLocation.getProvider());
-        if (isMoreAccurate) {
-            return true;
-        } else if (isNewer && !isLessAccurate) {
-            return true;
-        } else if (isNewer && !isSignificantlyLessAccurate && isFromSameProvider) {
-            return true;
-        }
-        return false;
-    }
-
-    private boolean isSameProvider(String provider1, String provider2) {
-        if (provider1 == null) {
-            return provider2 == null;
-        }
-        return provider1.equals(provider2);
-    }
-
     public LatLng getLatLngFromMarker(Marker marker) {
         if (marker != null) {
             return new LatLng(marker.getPosition().latitude, marker.getPosition().longitude);
@@ -112,6 +78,15 @@ public class MapsActivityPresenter extends MvpPresenter<MapsActivityView> implem
         if (location != null) {
             return new LatLng(location.getLatitude(), location.getLongitude());
         } else {return new LatLng(0.0, 0.0);}
+    }
+
+    public boolean isMarkerInsideCircle(Marker marker, Circle circle) {
+        float[] distance = new float[2];
+        boolean result;
+        Location.distanceBetween(marker.getPosition().latitude, marker.getPosition().longitude,
+                circle.getCenter().latitude, circle.getCenter().longitude, distance);
+        result = !(distance[0] > circle.getRadius());
+        return result;
     }
 
     /**

@@ -3,6 +3,7 @@ package com.example.who.geobasednotifications.ui;
 import android.location.Location;
 import android.support.design.widget.Snackbar;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -13,6 +14,8 @@ import com.example.who.geobasednotifications.presenters.MapsActivityPresenter;
 import com.example.who.geobasednotifications.ui.fragments.ChooseRadiusDialog;
 import com.example.who.geobasednotifications.utils.DialogHelper;
 import com.example.who.geobasednotifications.utils.MapUiHelper;
+import com.example.who.geobasednotifications.utils.NotificationHelper;
+import com.example.who.geobasednotifications.utils.SharedPrefUtils;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -64,6 +67,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback, Ma
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.getUiSettings().setMapToolbarEnabled(false);
+        mMap.getUiSettings().setCompassEnabled(false);
         mMap.setOnMarkerClickListener(this);
         checkForLocationCoords();
         snackbar = DialogHelper.getSnack(getString(R.string.add_your_marker), snackbar, root);
@@ -72,11 +76,11 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback, Ma
 
     private void addOnMapLongPress() {
         mMap.setOnMapLongClickListener(latLng -> {
-            if(latLng.equals(userMarker.getPosition())){
+            if (latLng.equals(userMarker.getPosition())) {
                 Toast.makeText(this, R.string.you_are_already_here, Toast.LENGTH_LONG).show();
             } else {
-            centerMarker = MapUiHelper.getCenterMarker(mMap, centerMarker, latLng);
-            snackbar = DialogHelper.getSnack(getString(R.string.add_your_circle), snackbar, root);
+                centerMarker = MapUiHelper.getCenterMarker(mMap, centerMarker, latLng);
+                snackbar = DialogHelper.getSnack(getString(R.string.add_your_circle), snackbar, root);
             }
         });
     }
@@ -97,6 +101,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback, Ma
         double radius = Double.valueOf(string);
         LatLng latLng = presenter.getLatLngFromMarker(centerMarker);
         circle = MapUiHelper.getCircle(mMap, circle, latLng, radius);
+        SharedPrefUtils.setMarkerIsInside(isMarkerInside());
     }
 
     @AfterPermissionGranted (RC_LOCATION_PERM)
@@ -129,19 +134,43 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback, Ma
     public void setLastKnownLocation(Location lastLoc) {
         this.lastKnownLocation = lastLoc;
         if (mMap != null) {
-            LatLng latLng = presenter.getLatLngFromLocation(lastLoc);
-            userMarker = MapUiHelper.getUserMarker(mMap, userMarker, latLng);
-            MapUiHelper.animatePosition(mMap, latLng);
+            setUserMarker(lastLoc);
         }
     }
 
     @Override
-    public void locationChanged(Location currentBestLocation) {
-        if (presenter.isBetterLocation(lastKnownLocation, currentBestLocation)) {
-            lastKnownLocation = currentBestLocation;
-            LatLng latLng = presenter.getLatLngFromLocation(currentBestLocation);
-            userMarker = MapUiHelper.getUserMarker(mMap, userMarker, latLng);
-            MapUiHelper.animatePosition(mMap, latLng);
+    public void locationChanged(Location changedLoc) {
+        Log.e("Changes", "locationChanged" + changedLoc.getLatitude() + changedLoc.getLongitude());
+            lastKnownLocation = changedLoc;
+            Log.e("Changes", "MARKER SET");
+            setUserMarker(lastKnownLocation);
+            if(SharedPrefUtils.getMarkerIsInside()!= isMarkerInside()){
+                sendNotification();
+                SharedPrefUtils.setMarkerIsInside(isMarkerInside());
+            }
+    }
+
+    private void setUserMarker(Location currentBestLocation) {
+        LatLng latLng = presenter.getLatLngFromLocation(currentBestLocation);
+        userMarker = MapUiHelper.getUserMarker(mMap, userMarker, latLng);
+        MapUiHelper.animatePosition(mMap, latLng);
+    }
+
+    private boolean isMarkerInside() {
+        return userMarker != null && circle != null && presenter.isMarkerInsideCircle(userMarker, circle);
+    }
+
+    private void sendNotification(){
+        String title = "";
+        String message = "";
+        if(isMarkerInside()){
+            title = getString(R.string.title_you_are_inside);
+            message = getString(R.string.message_you_are_inside);
+        } else {
+            title = getString(R.string.title_you_are_outside);
+            message = getString(R.string.message_you_are_outside);
         }
+        NotificationHelper.sendNotification(this, title, message);
+        SharedPrefUtils.setMarkerIsInside(isMarkerInside());
     }
 }
