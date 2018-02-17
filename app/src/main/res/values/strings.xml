@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">GeoBasedNotifications</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="rationale_location">need to get your for location</string>
+    <string name="switch_on_gps_dialog_title">Your GPS seems to be disabled, do you want to enable it?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="add_your_marker">Please long press on map to add the center marker.</string>
+    <string name="add_your_circle">Please press on marker to add the area radius.</string>
+</resources>
