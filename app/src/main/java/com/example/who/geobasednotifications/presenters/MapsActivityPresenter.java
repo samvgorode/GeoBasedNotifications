@@ -11,6 +11,8 @@ import com.arellomobile.mvp.InjectViewState;
 import com.arellomobile.mvp.MvpPresenter;
 import com.example.who.geobasednotifications.App;
 import com.example.who.geobasednotifications.interfaces.MapsActivityView;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 
 @InjectViewState
 public class MapsActivityPresenter extends MvpPresenter<MapsActivityView> implements LocationListener {
@@ -98,6 +100,10 @@ public class MapsActivityPresenter extends MvpPresenter<MapsActivityView> implem
             return provider2 == null;
         }
         return provider1.equals(provider2);
+    }
+
+    public LatLng getLatLngFromMarker(Marker marker){
+        return new LatLng(marker.getPosition().latitude, marker.getPosition().longitude);
     }
 
     /** LocationListener methods **/

@@ -15,6 +15,7 @@ import com.arellomobile.mvp.presenter.PresenterType;
 import com.example.who.geobasednotifications.R;
 import com.example.who.geobasednotifications.interfaces.MapsActivityView;
 import com.example.who.geobasednotifications.presenters.MapsActivityPresenter;
+import com.example.who.geobasednotifications.ui.fragments.ChooseRadiusDialog;
 import com.example.who.geobasednotifications.utils.DialogUtils;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -73,6 +74,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback, Ma
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.getUiSettings().setMapToolbarEnabled(false);
+        mMap.setOnMarkerClickListener(this);
         checkForLocationCoords();
         snackbar = Snackbar.make(rootLayout, getString(R.string.add_your_marker), Snackbar.LENGTH_INDEFINITE);
         snackbar.show();
@@ -80,27 +82,33 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback, Ma
     }
 
     private void addOnMapLongPress() {
-        mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
-            @Override
-            public void onMapLongClick(LatLng latLng) {
-                mMap.clear();
-                centerMarker = mMap.addMarker(new MarkerOptions()
-                        .position(latLng));
-                Circle circle = mMap.addCircle(new CircleOptions()
-                        .center(latLng)
-                        .radius(1000)
-                        .strokeColor(Color.RED)
-                        .fillColor(Color.GRAY));
-            }
+        mMap.setOnMapLongClickListener(latLng -> {
+            mMap.clear();
+            centerMarker = mMap.addMarker(new MarkerOptions()
+                    .position(latLng));
+            snackbar.setText(getString(R.string.add_your_circle));
         });
     }
 
     @Override
     public boolean onMarkerClick(Marker marker) {
-        if (marker == centerMarker) {
-            snackbar.setText(getString(R.string.add_your_circle));
+        if (marker.equals(centerMarker)) {
+            ChooseRadiusDialog dialog = ChooseRadiusDialog.newInstance(this::drawCircle);
+            if(!dialog.isAdded()) {
+                dialog.show(getSupportFragmentManager(), "");}
+            snackbar.dismiss();
+            return true;
         }
-        return false;
+        else return false;
+    }
+
+    private void drawCircle(String string){
+        double radius = Double.valueOf(string);
+        mMap.addCircle(new CircleOptions()
+                .center(presenter.getLatLngFromMarker(centerMarker))
+                .radius(radius)
+                .strokeColor(Color.RED)
+                .fillColor(Color.GRAY));
     }
 
     @AfterPermissionGranted (RC_LOCATION_PERM)
@@ -132,11 +140,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback, Ma
     @Override
     public void setLastKnownLocation(Location lastKnownLocation) {
         this.lastKnownLocation = lastKnownLocation;
-        /*if(mMap!=null) {
-        LatLng yours = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
-        mMap.addMarker(new MarkerOptions().position(yours).title("You are here"));
-        mMap.animateCamera(CameraUpdateFactory.newLatLng(yours));
-        }*/
     }
 
     @Override
