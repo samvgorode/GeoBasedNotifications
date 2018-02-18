@@ -148,7 +148,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback, Ma
         lastKnownLocation = changedLoc;
         Log.e("Changes", "MARKER SET");
         setUserMarker(lastKnownLocation);
-        if (SharedPrefUtils.getMarkerIsInside() != isMarkerInside()) {
+        if (SharedPrefUtils.getMarkerIsInside() != isMarkerInside() && circle!=null) {
             sendNotification();
             SharedPrefUtils.setMarkerIsInside(isMarkerInside());
         }
