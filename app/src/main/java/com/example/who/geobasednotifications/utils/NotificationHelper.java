@@ -40,8 +40,8 @@ public class NotificationHelper {
                 .setDefaults(Notification.DEFAULT_ALL)
 //                .setContentIntent(pendingIntent)
                 .setWhen(System.currentTimeMillis())
-                .setSmallIcon(R.drawable.common_google_signin_btn_icon_dark)
-                .setTicker("Hearty365")
+                .setSmallIcon(R.drawable.ic_cursor)
+                .setTicker("")
                 .setContentTitle(title)
                 .setContentText(message)
                 .setContentInfo("");
