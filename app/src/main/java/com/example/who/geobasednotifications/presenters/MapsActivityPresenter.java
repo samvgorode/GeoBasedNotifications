@@ -36,7 +36,10 @@ public class MapsActivityPresenter extends MvpPresenter<MapsActivityView> implem
     public void getBestLastKnownLocation() {
         Location networkLocation = locationManager.getLastKnownLocation(netProvider);
         Location gpslocation = locationManager.getLastKnownLocation(gpsProvider);
-        if (gpslocation == null) {
+        if(networkLocation == null && gpslocation==null) {
+            getViewState().showDialogSwitchOnGps();
+            return;
+        }if (gpslocation == null) {
             sendLocation(networkLocation);
             return;
         }
@@ -128,12 +131,14 @@ public class MapsActivityPresenter extends MvpPresenter<MapsActivityView> implem
     public void onStatusChanged(String s, int i, Bundle bundle) {}
 
     @Override
-    public void onProviderEnabled(String s) {}
+    public void onProviderEnabled(String s) {
+        locationManager.removeUpdates(this);
+        startListenLocationUpdates();
+    }
 
     @Override
     public void onProviderDisabled(String s) {
-        if (!netProviderEnabled() && !gpsProviderEnabled()) {
-            getViewState().showDialogSwitchOnGps();
-        }
+        locationManager.removeUpdates(this);
+        startListenLocationUpdates();
     }
 }
