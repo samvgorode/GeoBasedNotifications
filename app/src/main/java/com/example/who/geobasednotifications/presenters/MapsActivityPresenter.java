@@ -21,7 +21,6 @@ public class MapsActivityPresenter extends MvpPresenter<MapsActivityView> implem
     private LocationManager locationManager;
     private String gpsProvider;
     private String netProvider;
-    // check for location updates every thirty seconds
     private static final int FIVE_SECONDS = 1000 * 5;
     private static final int ONE_MINUTE = 1000 * 60;
 

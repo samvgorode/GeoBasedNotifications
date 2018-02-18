@@ -1,7 +1,6 @@
 package com.example.who.geobasednotifications.utils;
 
 import android.app.Activity;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.provider.Settings;
@@ -11,13 +10,8 @@ import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
-
 import com.example.who.geobasednotifications.App;
 import com.example.who.geobasednotifications.R;
-
-/**
- * Created by who on 17.02.2018.
- */
 
 public class DialogHelper {
 

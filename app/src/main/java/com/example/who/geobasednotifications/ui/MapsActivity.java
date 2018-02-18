@@ -3,7 +3,6 @@ package com.example.who.geobasednotifications.ui;
 import android.location.Location;
 import android.support.design.widget.Snackbar;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -144,9 +143,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback, Ma
 
     @Override
     public void locationChanged(Location changedLoc) {
-        Log.e("Changes", "locationChanged" + changedLoc.getLatitude() + changedLoc.getLongitude());
         lastKnownLocation = changedLoc;
-        Log.e("Changes", "MARKER SET");
         setUserMarker(lastKnownLocation);
         if (SharedPrefUtils.getMarkerIsInside() != isMarkerInside() && circle!=null) {
             sendNotification();
@@ -171,8 +168,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback, Ma
     }
 
     private void sendNotification() {
-        String title = "";
-        String message = "";
+        String title;
+        String message;
         if (isMarkerInside()) {
             title = getString(R.string.title_you_are_inside);
             message = getString(R.string.message_you_are_inside);
