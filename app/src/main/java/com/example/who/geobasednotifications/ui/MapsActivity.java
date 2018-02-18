@@ -25,6 +25,7 @@ import com.google.android.gms.maps.model.Marker;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 
 public class MapsActivity extends BaseActivity implements OnMapReadyCallback, MapsActivityView, GoogleMap.OnMarkerClickListener {
@@ -52,14 +53,14 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback, Ma
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    protected void onResume() {
+        super.onResume();
         startListenForLocationUpdates();
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onPause() {
+        super.onPause();
         presenter.stopListenLocationUpdates();
     }
 
@@ -79,6 +80,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback, Ma
             if (latLng.equals(userMarker.getPosition())) {
                 Toast.makeText(this, R.string.you_are_already_here, Toast.LENGTH_LONG).show();
             } else {
+                if(circle!=null) {circle.remove();}
                 centerMarker = MapUiHelper.getCenterMarker(mMap, centerMarker, latLng);
                 snackbar = DialogHelper.getSnack(getString(R.string.add_your_circle), snackbar, root);
             }
@@ -107,7 +109,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback, Ma
     @AfterPermissionGranted (RC_LOCATION_PERM)
     private void checkForLocationCoords() {
         if (hasLocationPermissions()) {
-            presenter.getLastKnownLocation();
+            presenter.getBestLastKnownLocation();
         } else {
             super.askForPermissions();
         }
@@ -132,38 +134,46 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback, Ma
 
     @Override
     public void setLastKnownLocation(Location lastLoc) {
-        this.lastKnownLocation = lastLoc;
-        if (mMap != null) {
-            setUserMarker(lastLoc);
+        if (lastLoc!=null) {
+            this.lastKnownLocation = lastLoc;
+            if (mMap != null) {
+                animate(lastLoc);
+            }
         }
     }
 
     @Override
     public void locationChanged(Location changedLoc) {
         Log.e("Changes", "locationChanged" + changedLoc.getLatitude() + changedLoc.getLongitude());
-            lastKnownLocation = changedLoc;
-            Log.e("Changes", "MARKER SET");
-            setUserMarker(lastKnownLocation);
-            if(SharedPrefUtils.getMarkerIsInside()!= isMarkerInside()){
-                sendNotification();
-                SharedPrefUtils.setMarkerIsInside(isMarkerInside());
-            }
+        lastKnownLocation = changedLoc;
+        Log.e("Changes", "MARKER SET");
+        setUserMarker(lastKnownLocation);
+        if (SharedPrefUtils.getMarkerIsInside() != isMarkerInside()) {
+            sendNotification();
+            SharedPrefUtils.setMarkerIsInside(isMarkerInside());
+        }
+    }
+
+    private void animate(Location location){
+        LatLng latLng = presenter.getLatLngFromLocation(location);
+        userMarker = MapUiHelper.getUserMarker(mMap, userMarker, latLng);
+        MapUiHelper.animateCamera(mMap, latLng);
     }
 
     private void setUserMarker(Location currentBestLocation) {
         LatLng latLng = presenter.getLatLngFromLocation(currentBestLocation);
         userMarker = MapUiHelper.getUserMarker(mMap, userMarker, latLng);
-        MapUiHelper.animatePosition(mMap, latLng);
+        MapUiHelper.moveCamers(mMap, latLng);
     }
 
     private boolean isMarkerInside() {
         return userMarker != null && circle != null && presenter.isMarkerInsideCircle(userMarker, circle);
     }
 
-    private void sendNotification(){
+    private void sendNotification() {
         String title = "";
         String message = "";
-        if(isMarkerInside()){
+        if (isMarkerInside()) {
             title = getString(R.string.title_you_are_inside);
             message = getString(R.string.message_you_are_inside);
         } else {
@@ -172,5 +182,11 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback, Ma
         }
         NotificationHelper.sendNotification(this, title, message);
         SharedPrefUtils.setMarkerIsInside(isMarkerInside());
+    }
+
+    @OnClick(R.id.find_my_loc)
+    void click(){
+        LatLng latLng = presenter.getLatLngFromMarker(userMarker);
+        MapUiHelper.animateCamera(mMap, latLng);
     }
 }

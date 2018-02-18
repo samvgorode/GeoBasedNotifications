@@ -6,7 +6,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.util.Log;
 
 import com.arellomobile.mvp.InjectViewState;
 import com.arellomobile.mvp.MvpPresenter;
@@ -23,8 +22,8 @@ public class MapsActivityPresenter extends MvpPresenter<MapsActivityView> implem
     private String gpsProvider;
     private String netProvider;
     // check for location updates every thirty seconds
-    private static final int THIRTY_SECONDS = 1000 /** 30*/;
-    private static final int TWO_MINUTES = 1000 * 60 * 2;
+    private static final int FIVE_SECONDS = 1000 * 5;
+    private static final int ONE_MINUTE = 1000 * 60;
 
     public MapsActivityPresenter() {
         Context context = App.getAppContext();
@@ -34,23 +33,52 @@ public class MapsActivityPresenter extends MvpPresenter<MapsActivityView> implem
     }
 
     @SuppressLint ("MissingPermission")
-    public void getLastKnownLocation() {
-        if (netProviderEnabled()) {
-            getViewState().setLastKnownLocation(locationManager.getLastKnownLocation(netProvider));
+    public void getBestLastKnownLocation() {
+        Location networkLocation = locationManager.getLastKnownLocation(netProvider);
+        Location gpslocation = locationManager.getLastKnownLocation(gpsProvider);
+        if (gpslocation == null) {
+            sendLocation(networkLocation);
+            return;
+        }
+        if (networkLocation == null) {
+            sendLocation(gpslocation);
+            return;
+        }
+        if (netProviderEnabled() && gpsProviderEnabled()) {
+            long old = System.currentTimeMillis() - ONE_MINUTE;
+            boolean gpsIsOld = (gpslocation.getTime() < old);
+            boolean networkIsOld = (networkLocation.getTime() < old);
+            if (!gpsIsOld) {
+                sendLocation(gpslocation);
+                return;
+            } else if (!networkIsOld) {
+                sendLocation(networkLocation);
+                return;
+            }
+            if (gpslocation.getTime() > networkLocation.getTime()) {
+                sendLocation(gpslocation);
+            } else {
+                sendLocation(networkLocation);
+            }
+        } else if (netProviderEnabled() && !gpsProviderEnabled()) {
+            sendLocation(networkLocation);
         } else if (!netProviderEnabled() && gpsProviderEnabled()) {
-            getViewState().setLastKnownLocation(locationManager.getLastKnownLocation(gpsProvider));
+            sendLocation(gpslocation);
         } else {
             getViewState().showDialogSwitchOnGps();
         }
+    }
 
+    private void sendLocation(Location location) {
+        getViewState().setLastKnownLocation(location);
     }
 
     @SuppressLint ("MissingPermission")
     public void startListenLocationUpdates() {
         if (netProviderEnabled()) {
-            locationManager.requestLocationUpdates(netProvider, THIRTY_SECONDS, 0, this);
+            locationManager.requestLocationUpdates(netProvider, FIVE_SECONDS, 1, this);
         } else if (!netProviderEnabled() && gpsProviderEnabled()) {
-            locationManager.requestLocationUpdates(gpsProvider, THIRTY_SECONDS, 0, this);
+            locationManager.requestLocationUpdates(gpsProvider, FIVE_SECONDS, 1, this);
         } else {
             getViewState().showDialogSwitchOnGps();
         }
@@ -64,9 +92,7 @@ public class MapsActivityPresenter extends MvpPresenter<MapsActivityView> implem
         return locationManager.isProviderEnabled(netProvider);
     }
 
-    private boolean gpsProviderEnabled() {
-        return locationManager.isProviderEnabled(gpsProvider);
-    }
+    private boolean gpsProviderEnabled() {return locationManager.isProviderEnabled(gpsProvider);}
 
     public LatLng getLatLngFromMarker(Marker marker) {
         if (marker != null) {
@@ -106,6 +132,8 @@ public class MapsActivityPresenter extends MvpPresenter<MapsActivityView> implem
 
     @Override
     public void onProviderDisabled(String s) {
-        getViewState().showDialogSwitchOnGps();
+        if (!netProviderEnabled() && !gpsProviderEnabled()) {
+            getViewState().showDialogSwitchOnGps();
+        }
     }
 }

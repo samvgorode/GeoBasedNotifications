@@ -1,9 +1,6 @@
 package com.example.who.geobasednotifications.utils;
 
-import android.graphics.Color;
-import android.location.Location;
 import android.support.v4.content.ContextCompat;
-
 import com.example.who.geobasednotifications.App;
 import com.example.who.geobasednotifications.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -29,16 +26,17 @@ public class MapUiHelper {
             if (marker == null)
                 return mMap.addMarker(new MarkerOptions()
                         .position(latLng)
-                        .title("You are here")
+                        .title(App.getAppContext().getString(R.string.you_are_here))
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
             else {marker.setPosition(latLng); return marker;}
     }
 
-    public static void animatePosition(GoogleMap mMap, LatLng latLng){
-        CameraPosition cameraPosition = new CameraPosition.Builder()
-                .target(latLng)
-                .zoom(17)
-                .build();
+    public static void moveCamers(GoogleMap mMap, LatLng latLng){
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+    }
+
+    public static void animateCamera(GoogleMap mMap, LatLng latLng){
+        CameraPosition cameraPosition = CameraPosition.builder().target(latLng).zoom(17).build();
         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
 

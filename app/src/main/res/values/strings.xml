@@ -17,4 +17,5 @@
     <string name="message_you_are_inside">The position relative to the circle has changed to INSIDE</string>
     <string name="title_you_are_outside">You are now OUTSIDE the circle!</string>
     <string name="message_you_are_outside">The position relative to the circle has changed to OUTSIDE</string>
+    <string name="you_are_here">You are here</string>
 </resources>
