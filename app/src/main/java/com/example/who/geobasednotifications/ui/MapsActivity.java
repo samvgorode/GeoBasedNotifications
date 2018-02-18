@@ -180,7 +180,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback, Ma
             title = getString(R.string.title_you_are_outside);
             message = getString(R.string.message_you_are_outside);
         }
-        NotificationHelper.sendNotification(this, title, message);
+        NotificationHelper.sendNotification(title, message);
         SharedPrefUtils.setMarkerIsInside(isMarkerInside());
     }
 

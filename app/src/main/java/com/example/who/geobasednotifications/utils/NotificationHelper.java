@@ -16,7 +16,7 @@ import com.example.who.geobasednotifications.ui.MapsActivity;
 
 public class NotificationHelper {
 
-    public static void sendNotification(Activity activity, String title, String message) {
+    public static void sendNotification(String title, String message) {
         Context context = App.getAppContext();
 
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
