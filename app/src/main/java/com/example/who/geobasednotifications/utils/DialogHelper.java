@@ -25,8 +25,12 @@ public class DialogHelper {
         final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setMessage(R.string.switch_on_gps_dialog_title)
                 .setCancelable(false)
-                .setPositiveButton(R.string.yes, (dialog, id) -> activity.startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)))
-                .setNegativeButton(R.string.no, (dialog, id) -> dialog.cancel());
+                .setPositiveButton(R.string.yes, (dialog, id) ->
+                {
+                    activity.startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                    dialog.dismiss();
+                })
+                .setNegativeButton(R.string.no, (dialog, id) -> dialog.dismiss());
         final AlertDialog alert = builder.create();
         alert.show();
     }

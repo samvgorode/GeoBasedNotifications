@@ -23,4 +23,5 @@ public class SharedPrefUtils {
     public static boolean getMarkerIsInside() {
         return getSharedPref().getBoolean(MARKER_INSIDE_CIRCLE, false);
     }
+
 }

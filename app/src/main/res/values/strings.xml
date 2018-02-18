@@ -7,7 +7,7 @@
     <string name="no">No</string>
     <string name="add_your_marker">Please long press on the map anywhere\n for adding the center of the circle.</string>
     <string name="add_your_circle">Please click on the green marker\n for adding the area radius.</string>
-    <string name="add_your_circle_again">Please click on the green marker again\n for changing the area radius.</string>
+    <string name="tou_will_get_notification">Leaving the circle or entering the circle\n you will receive the notification</string>
     <string name="set_radius_of_area">Submit the radius</string>
     <string name="insert_radius_here">Insert the radius here</string>
     <string name="radius_empty">Radius might not be empty</string>

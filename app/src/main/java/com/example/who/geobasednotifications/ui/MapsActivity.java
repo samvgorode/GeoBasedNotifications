@@ -94,7 +94,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback, Ma
             if (!dialog.isAdded()) {
                 dialog.show(getSupportFragmentManager(), "");
             }
-            snackbar = DialogHelper.getSnack(getString(R.string.add_your_circle_again), snackbar, root);
+            snackbar = DialogHelper.getSnack(getString(R.string.tou_will_get_notification), snackbar, root);
             return true;
         } else return false;
     }
